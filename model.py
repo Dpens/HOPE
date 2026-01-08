@@ -227,15 +227,7 @@ class MOE(nn.Module):
             gain = nn.init.calculate_gain("sigmoid")
             nn.init.xavier_uniform_(self.weight, gain=gain)
         
-        if "MOHE" in self.aggregation:
-            self.mohe = MOHE_optimizer(in_feats=hidden,
-                             hidden_feats=hidden,
-                             out_feats=nclass,
-                             dropout=dropout,
-                             num_layers=n_layers_1,
-                             num_experts=(num_feats + num_label_feats),
-                             expert_capacity_factor=upper_bound)
-        elif "HOPE" in self.aggregation:
+        if "HOPE" in self.aggregation:
             self.mohe = HOPE(in_feats=hidden,
                              hidden_feats=hidden,
                              out_feats=nclass,
@@ -266,9 +258,7 @@ class MOE(nn.Module):
         elif "HGAMLP" in self.aggregation:
             pass
 
-        if "MOHE" in self.aggregation:
-            self.mohe.reset_parameters()
-        elif "HOPE" in self.aggregation:
+        if "HOPE" in self.aggregation:
             self.mohe.reset_parameters()
         else:
             nn.init.xavier_uniform_(self.concat_project_layer.weight, gain=gain)
@@ -307,9 +297,7 @@ class MOE(nn.Module):
             for i in range(x.shape[1]):
                 output_r.append(x[:,i,:].mul(self.att_drop(global_vector[:, i].unsqueeze(1))))
             x = torch.stack(output_r, dim=1)
-        if "MOHE" in self.aggregation:
-            x = self.mohe(x)
-        elif "HOPE" in self.aggregation:
+        if "HOPE" in self.aggregation:
             x = self.mohe(x)
         else:
             x = self.concat_project_layer(x.reshape(B, -1))
